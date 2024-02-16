@@ -3,6 +3,7 @@ const morgan = require("morgan");
 const app = express();
 const cors = require("cors");
 app.use(express.static("dist"));
+const Person = require("./models/person");
 
 morgan.token("body", function (req, res) {
   if (req.method === "POST") return JSON.stringify(req.body);
@@ -40,7 +41,9 @@ let persons = [
 ];
 
 app.get("/api/persons", (request, response) => {
-  response.json(persons);
+  Person.find({}).then((result) => {
+    response.json(result);
+  });
 });
 
 app.get("/api/info", (request, response) => {
@@ -74,21 +77,21 @@ app.post("/api/persons", (request, response) => {
     });
   }
 
-  if (persons.find((person) => person.name === body.name)) {
-    return response.status(400).json({
-      error: "name must be unique",
-    });
-  }
+  // if (persons.find((person) => person.name === body.name)) {
+  //   return response.status(400).json({
+  //     error: "name must be unique",
+  //   });
+  // }
 
-  const person = {
+  const person = new Person({
     id: Math.floor(Math.random() * 9999999999),
     name: body.name,
     number: body.number ? body.number : "None",
-  };
+  });
 
-  persons = persons.concat(person);
-
-  response.json(person);
+  person.save().then((savedPerson) => {
+    response.json(savedPerson);
+  });
 });
 
 app.delete("/api/persons/:id", (request, response) => {
