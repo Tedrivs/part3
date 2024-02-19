@@ -37,21 +37,27 @@ app.get("/api/persons", (request, response, next) => {
     .catch((error) => next(error));
 });
 
-app.get("/api/info", (request, response) => {
-  const info = `Phonebook has info for ${
-    persons.length
-  } people </br></br>${new Date()}`;
-  response.send(info);
+app.get("/api/info", (request, response, next) => {
+  let personLength = 0;
+  Person.find({})
+    .then((result) => {
+      personLength = result.length;
+      const info = `Phonebook has info for ${personLength} people </br></br>${new Date()}`;
+      response.send(info);
+    })
+    .catch((error) => next(error));
 });
 
-app.get("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  const person = persons.find((person) => person.id === id);
-  if (person) {
-    response.json(person);
-  } else {
-    response.status(404).end();
-  }
+app.get("/api/persons/:id", (request, response, next) => {
+  Person.findById(request.params.id)
+    .then((person) => {
+      if (person) {
+        response.json(person);
+      } else {
+        response.status(404).end();
+      }
+    })
+    .catch((error) => next(error));
 });
 
 app.post("/api/persons", (request, response, next) => {
